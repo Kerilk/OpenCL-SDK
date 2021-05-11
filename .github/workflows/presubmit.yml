@@ -26,10 +26,6 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
-      - name: install Ruby and POCL
-        run: sudo apt install ruby-dev pocl-opencl-icd
-      - name: install OpenCL Ruby Bindings
-        run: gem install --user-install opencl_ruby_ffi
       - name: Build
         run: |
             mkdir build
@@ -58,3 +54,16 @@ jobs:
           cd build
           cmake ../
           cmake --build .
+  buildruby:
+    needs: format
+    name: Build Ruby
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: install Ruby and POCL
+        run: sudo apt install ruby-dev pocl-opencl-icd
+      - name: install OpenCL Ruby Bindings
+        run: gem install --user-install opencl_ruby_ffi

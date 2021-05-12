@@ -33,14 +33,12 @@ q = c.create_command_queue(d)
 program = c.create_program_with_source(kernel_string)
 begin
   program.build
-rescue
-  puts "Compilation of program failed:"
+rescue OpenCL::Error => e
+  puts "Compilation of program failed (#{e}):"
   program.build_log.each { |device, log|
-    _, status = program.build_status(device)
-    puts " - #{device.name} (#{status}):"
+    puts " - #{device.name}:"
     puts log
   }
-  #something is wrong with the platform, exit gracefully
   exit
 end
 

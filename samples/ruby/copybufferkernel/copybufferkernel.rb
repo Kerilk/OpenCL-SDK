@@ -31,7 +31,16 @@ c = OpenCL.create_context(d)
 q = c.create_command_queue(d)
 
 program = c.create_program_with_source(kernel_string)
-program.build
+begin
+  program.build
+rescue
+  puts "Compilation of program failed:"
+  program.build_logs.each { |device, log|
+    puts " - #{device.name}:"
+    puts log
+  }
+  abort("Build error")
+end
 
 device_src = c.create_buffer(buffer_size*OpenCL::UInt.size, flags: OpenCL::Mem::ALLOC_HOST_PTR)
 device_dst = c.create_buffer(buffer_size*OpenCL::UInt.size, flags: OpenCL::Mem::ALLOC_HOST_PTR)

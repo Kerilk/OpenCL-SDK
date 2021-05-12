@@ -34,7 +34,7 @@ program = c.create_program_with_source(kernel_string)
 begin
   program.build
 rescue OpenCL::Error => e
-  puts "Compilation of program failed (#{e}):"
+  puts "Compilation of program failed (#{e.class.name}):"
   program.build_log.each { |device, log|
     puts " - #{device.name}:"
     puts log

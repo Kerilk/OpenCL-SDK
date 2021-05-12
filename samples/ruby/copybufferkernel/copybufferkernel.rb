@@ -27,36 +27,37 @@ raise "Invalid device index #{options[:device]}" unless d
 puts "Running on platform: #{p.name}"
 puts "Running on device: #{d.name}"
 
-c = OpenCL.create_context(d)
-q = c.create_command_queue(d)
-
-program = c.create_program_with_source(kernel_string)
 begin
+  c = OpenCL.create_context(d)
+  q = c.create_command_queue(d)
+
+  program = c.create_program_with_source(kernel_string)
   program.build
-rescue OpenCL::Error => e
-  puts "Compilation of program failed (#{e.class.name}):"
+  device_src = c.create_buffer(buffer_size*OpenCL::UInt.size, flags: OpenCL::Mem::ALLOC_HOST_PTR)
+  device_dst = c.create_buffer(buffer_size*OpenCL::UInt.size, flags: OpenCL::Mem::ALLOC_HOST_PTR)
+
+  _, host_ptr = q.enqueue_map_buffer(device_src, OpenCL::MapFlags::WRITE_INVALIDATE_REGION, blocking: true)
+  arr = NArray.to_na(host_ptr, NArray::INT)
+  buffer_size.times { |i| arr[i] = i }
+  q.enqueue_unmap_mem_object(device_src, host_ptr)
+
+  program.CopyBuffer(q, [buffer_size], device_dst, device_src)
+
+  _, host_ptr = q.enqueue_map_buffer(device_dst, OpenCL::MapFlags::READ, blocking: true)
+  arr = NArray.to_na(host_ptr, NArray::INT)
+  buffer_size.times { |i|
+    raise "invalid copy: wanted #{i}, got #{arr[i]}" unless arr[i] == i
+  }
+  q.enqueue_unmap_mem_object(device_dst, host_ptr)
+
+  puts "Success."
+rescue OpenCL::Error::BUILD_PROGRAM_FAILURE
+  puts "Compilation of program failed:"
   program.build_log.each { |device, log|
     puts " - #{device.name}:"
     puts log
   }
-  exit
+  puts "Expected Failure on MacOS..."
 end
 
-device_src = c.create_buffer(buffer_size*OpenCL::UInt.size, flags: OpenCL::Mem::ALLOC_HOST_PTR)
-device_dst = c.create_buffer(buffer_size*OpenCL::UInt.size, flags: OpenCL::Mem::ALLOC_HOST_PTR)
 
-_, host_ptr = q.enqueue_map_buffer(device_src, OpenCL::MapFlags::WRITE_INVALIDATE_REGION, blocking: true)
-arr = NArray.to_na(host_ptr, NArray::INT)
-buffer_size.times { |i| arr[i] = i }
-q.enqueue_unmap_mem_object(device_src, host_ptr)
-
-program.CopyBuffer(q, [buffer_size], device_dst, device_src)
-
-_, host_ptr = q.enqueue_map_buffer(device_dst, OpenCL::MapFlags::READ, blocking: true)
-arr = NArray.to_na(host_ptr, NArray::INT)
-buffer_size.times { |i|
-  raise "invalid copy: wanted #{i}, got #{arr[i]}" unless arr[i] == i
-}
-q.enqueue_unmap_mem_object(device_dst, host_ptr)
-
-puts "Success."

@@ -35,7 +35,7 @@ begin
   program.build
 rescue
   puts "Compilation of program failed:"
-  program.build_logs.each { |device, log|
+  program.build_log.each { |device, log|
     puts " - #{device.name}:"
     puts log
   }

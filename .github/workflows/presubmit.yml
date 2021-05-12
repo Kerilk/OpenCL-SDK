@@ -70,3 +70,18 @@ jobs:
       - name: run Ruby Samples
         run: rake test
         working-directory: samples/ruby
+
+  buildruby-macos:
+    needs: format
+    name: Build Ruby MacOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: install OpenCL Ruby Bindings
+        run: gem install --user-install opencl_ruby_ffi
+      - name: run Ruby Samples
+        run: rake test
+        working-directory: samples/ruby

@@ -67,3 +67,6 @@ jobs:
         run: sudo apt install ruby-dev pocl-opencl-icd
       - name: install OpenCL Ruby Bindings
         run: gem install --user-install opencl_ruby_ffi
+      - name: run Ruby Samples
+        run: rake test
+        working-directory: samples/ruby

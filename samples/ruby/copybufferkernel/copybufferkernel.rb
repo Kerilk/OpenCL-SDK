@@ -36,10 +36,12 @@ begin
 rescue
   puts "Compilation of program failed:"
   program.build_log.each { |device, log|
-    puts " - #{device.name}:"
+    _, status = program.build_status(device)
+    puts " - #{device.name} (#{status}):"
     puts log
   }
-  abort("Build error")
+  #something is wrong with the platform, exit gracefully
+  exit
 end
 
 device_src = c.create_buffer(buffer_size*OpenCL::UInt.size, flags: OpenCL::Mem::ALLOC_HOST_PTR)

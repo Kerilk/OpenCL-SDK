@@ -54,34 +54,26 @@ jobs:
           cd build
           cmake ../
           cmake --build .
-  buildruby:
-    needs: format
-    name: Build Ruby
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          submodules: recursive
-      - name: install Ruby and POCL
-        run: sudo apt install ruby-dev pocl-opencl-icd
-      - name: install OpenCL Ruby Bindings
-        run: gem install --user-install opencl_ruby_ffi
-      - name: run Ruby Samples
-        run: rake test
-        working-directory: samples/ruby
 
-  buildruby-macos:
-    needs: format
-    name: Build Ruby MacOS
-    runs-on: macos-latest
+  buildruby:
+    name: Build Ruby ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
           submodules: recursive
-      - name: install OpenCL Ruby Bindings
-        run: gem install --user-install opencl_ruby_ffi
-      - name: run Ruby Samples
+      - name: Install Ruby and POCL
+        run: sudo apt install pocl-opencl-icd
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+      - name: Install OpenCL Ruby Bindings and RuboCop
+        run: gem install --user-install opencl_ruby_ffi rubocop
+      - name: Check Ruby Syntax
+        run: rubocop
+        working-directory: samples/ruby
+      - name: Run Ruby Samples
         run: rake test
         working-directory: samples/ruby

@@ -72,10 +72,10 @@ jobs:
       - name: Install OpenCL Ruby Bindings and RuboCop
         run: gem install --user-install opencl_ruby_ffi rubocop
       - name: Check Ruby Syntax
-        run: rubocop
+        run: |
+          export PATH=`ruby -r rubygems -e 'puts Gem.user_dir'`/bin:$PATH
+          rubocop
         working-directory: samples/ruby
-        env:
-          PATH: "`ruby -r rubygems -e 'puts Gem.user_dir'`/bin:$PATH"
       - name: Run Ruby Samples
         run: rake test
         working-directory: samples/ruby

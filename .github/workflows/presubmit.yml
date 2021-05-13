@@ -74,6 +74,8 @@ jobs:
       - name: Check Ruby Syntax
         run: rubocop
         working-directory: samples/ruby
+        env:
+          PATH: "$(ruby -r rubygems -e 'puts Gem.user_dir')/bin:$PATH"
       - name: Run Ruby Samples
         run: rake test
         working-directory: samples/ruby

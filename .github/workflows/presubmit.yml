@@ -75,7 +75,7 @@ jobs:
         run: |
           export PATH=`ruby -r rubygems -e 'puts Gem.user_dir'`/bin:$PATH
           rubocop
-        working-directory: samples/ruby
+        working-directory: ruby
       - name: Run Ruby Samples
         run: rake test
-        working-directory: samples/ruby
+        working-directory: ruby
